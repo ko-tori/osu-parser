@@ -10,7 +10,8 @@ function beatmapParser() {
     nbSpinners: 0,
     timingPoints: [],
     breakTimes: [],
-    hitObjects: []
+    hitObjects: [],
+    colors: []
   };
 
   var osuSection;
@@ -21,6 +22,7 @@ function beatmapParser() {
   var timingLines    = [];
   var objectLines    = [];
   var eventsLines    = [];
+  var colorLines = [];
   var sectionReg     = /^\[([a-zA-Z0-9]+)\]$/;
   var keyValReg      = /^([a-zA-Z0-9]+)[ ]*:[ ]*(.+)$/;
   var curveTypes     = {
@@ -291,6 +293,11 @@ function beatmapParser() {
       });
     }
   };
+  
+  var parseColor = function (line) {
+    var members = line.replace(/Combo\d : /,'').split(',');
+    beatmap.colors.push(members);
+  };
 
   /**
    * Compute the total time and the draining time of the beatmap
@@ -376,6 +383,9 @@ function beatmapParser() {
     case 'events':
       eventsLines.push(line);
       break;
+    case 'colours':
+      colorLines.push(line);
+      break;
     default:
       if (!osuSection) {
         match = /^osu file format (v[0-9]+)$/.exec(line);
@@ -402,6 +412,8 @@ function beatmapParser() {
       beatmap.tagsArray = beatmap.Tags.split(' ');
     }
 
+    colorLines.forEach(parseColor);
+    
     eventsLines.forEach(parseEvent);
     beatmap.breakTimes.sort(function (a, b) { return (a.startTime > b.startTime ? 1 : -1); });
 
