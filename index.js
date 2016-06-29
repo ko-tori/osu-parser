@@ -110,9 +110,14 @@ function beatmapParser() {
       customSampleIndex: parseInt(members[4]),
       sampleVolume:      parseInt(members[5]),
       timingChange:      (members[6] == 1),
-      kiaiTimeActive:    (members[7] == 1)
+      kiaiTimeActive:    (members[7] == 1),
+      baseOffset: parseInt(members[0])
     };
 
+    if (timingChange){
+      timingPoint.baseOffset = beatmap.timingPoints[ beatmap.timingPoints.length - 1 ].baseOffset;
+    }
+    
     if (!isNaN(timingPoint.beatLength) && timingPoint.beatLength !== 0) {
       if (timingPoint.beatLength > 0) {
         // If positive, beatLength is the length of a beat in milliseconds
