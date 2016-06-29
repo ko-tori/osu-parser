@@ -520,3 +520,109 @@ exports.parseContent = function (content) {
 
   return parser.buildBeatmap();
 };
+
+// skin.ini parsing
+
+function skinParser() {
+  var skin = {};
+
+  var keyValReg      = /^([a-zA-Z0-9]+)[ ]*:[ ]*(.+)$/;
+
+  /**
+   * All values in a skin.ini are key: value, so simply go through and store all of them
+   * @param  {String|Buffer} line
+   */
+  var readLine = function (line) {
+    line = line.toString().trim();
+    if (!line) { return; }
+    var match = keyValReg.exec(line);
+    if (match) { skin[match[1]] = match[2]; }
+  };
+
+  return {
+    readLine: readLine,
+    skin: skin
+  };
+}
+
+
+
+/**
+ * Parse a skin.ini file
+ * @param  {String}   file  path to the file
+ * @param  {Function} callback(err, skin)
+ */
+exports.parseSkinFile = function (file, callback) {
+  fs.exists(file, function (exists) {
+    if (!exists) {
+      callback(new Error('file does not exist'));
+      return;
+    }
+
+    var parser = skinParser();
+    var stream = fs.createReadStream(file);
+    var buffer = '';
+
+
+    stream.on('data', function (chunk) {
+      buffer   += chunk;
+      var lines = buffer.split(/\r?\n/);
+      buffer    = lines.pop() || '';
+      lines.forEach(parser.readLine);
+    });
+
+    stream.on('error', function (err) {
+      callback(err);
+    });
+
+    stream.on('end', function () {
+      buffer.split(/\r?\n/).forEach(parser.readLine);
+      callback(null, parser.skin);
+    });
+  });
+};
+
+/**
+ * Parse a stream containing skin.ini content
+ * @param  {Stream}   stream
+ * @param  {Function} callback(err, skin)
+ */
+exports.parseSkinStream = function (stream, callback) {
+  var parser = skinParser();
+  var buffer = '';
+
+  stream.on('data', function (chunk) {
+    buffer   += chunk.toString();
+    var lines = buffer.split(/\r?\n/);
+    buffer    = lines.pop() || '';
+    lines.forEach(parser.readLine);
+  });
+
+  stream.on('error', function (err) {
+    callback(err);
+  });
+
+  stream.on('end', function () {
+    buffer.split(/\r?\n/).forEach(parser.readLine);
+    callback(null, parser.skin);
+  });
+};
+
+/**
+ * Parse the content of a skin.ini
+ * @param  {String|Buffer} content
+ * @return {Object} skin
+ */
+exports.parseSkinContent = function (content) {
+  var parser = skinParser();
+  content.toString().split(/[\n\r]+/).forEach(function (line) {
+    parser.readLine(line);
+  });
+
+  return parser.skin;
+};
+
+exports.parseSkinFile('nso/Skins/trololol/skin.ini',function(err, skin){
+  if(err) console.log("err:", err);
+  console.log(skin);
+});
