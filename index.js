@@ -621,8 +621,3 @@ exports.parseSkinContent = function (content) {
 
   return parser.skin;
 };
-
-exports.parseSkinFile('nso/Skins/trololol/skin.ini',function(err, skin){
-  if(err) console.log("err:", err);
-  console.log(skin);
-});
