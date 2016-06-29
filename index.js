@@ -114,7 +114,7 @@ function beatmapParser() {
       baseOffset: parseInt(members[0])
     };
 
-    if (timingPoint.timingChange){
+    if (!timingPoint.timingChange && beatmap.timingPoints.length){
       timingPoint.baseOffset = beatmap.timingPoints[ beatmap.timingPoints.length - 1 ].baseOffset;
     }
     
